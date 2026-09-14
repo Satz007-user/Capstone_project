@@ -28,9 +28,11 @@ pipeline {
         stage('Deploy to App EC2') {
             steps {
                 sshagent(['app-ec2-ssh-key']) {
-                    bat """
-                        ssh -o StrictHostKeyChecking=no ubuntu@${APP_EC2_IP} "docker pull ${IMAGE_NAME}:latest && docker stop node-app || true && docker rm node-app || true && docker run -d --name node-app -p 3000:3000 ${IMAGE_NAME}:latest"
-                    """
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-token', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        bat """
+                            ssh -o StrictHostKeyChecking=no ubuntu@${APP_EC2_IP} "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin && docker pull ${IMAGE_NAME}:latest && docker stop node-app || true && docker rm node-app || true && docker run -d --name node-app -p 3000:3000 ${IMAGE_NAME}:latest"
+                        """
+                    }
                 }
             }
         }
