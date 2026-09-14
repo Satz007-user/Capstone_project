@@ -17,11 +17,14 @@ pipeline {
             }
         }
         stage('Push Image to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-token', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    bat "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin"
-                    bat "docker push ${IMAGE_NAME}:${BUILD_NUMBER}"
-                    bat "docker push ${IMAGE_NAME}:latest"
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-token', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+            bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
+            bat "docker push ${IMAGE_NAME}:${BUILD_NUMBER}"
+            bat "docker push ${IMAGE_NAME}:latest"
+        }
+    }
+}
                 }
             }
         }
