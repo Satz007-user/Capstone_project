@@ -1,40 +1,65 @@
 pipeline {
     agent any
+
     environment {
-        IMAGE_NAME = 'sathya10dock/node-devops-app'
-        APP_EC2_IP = '18.61.163.127'
+        // Replace with your actual Docker Hub username and repository name
+        DOCKER_HUB_USER = 'your-dockerhub-username'
+        IMAGE_NAME      = 'node-devops-app'
+        IMAGE_TAG       = 'latest'
+        CONTAINER_NAME  = 'node-app-local'
+        // Jenkins Credentials ID created for Docker Hub login
+        DOCKER_CREDS_ID = 'docker-hub-credentials'
     }
+
     stages {
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
+                echo 'Checking out source code from GitHub...'
                 checkout scm
             }
         }
+
         stage('Build Docker Image') {
             steps {
-                bat "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
-                bat "docker tag ${IMAGE_NAME}:${BUILD_NUMBER} ${IMAGE_NAME}:latest"
+                echo 'Building Docker image...'
+                sh "docker build -t ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
-        stage('Push Image to Docker Hub') {
+
+        stage('Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-token', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
-                    bat "docker push ${IMAGE_NAME}:${BUILD_NUMBER}"
-                    bat "docker push ${IMAGE_NAME}:latest"
+                echo 'Logging in and pushing image to Docker Hub...'
+                withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDS_ID}", passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                    sh "echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin"
+                    sh "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
                 }
             }
         }
-        stage('Deploy to App EC2') {
+
+        stage('Deploy Container') {
             steps {
-                sshagent(['app-ec2-ssh-key']) {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-token', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        bat """
-                            ssh -o StrictHostKeyChecking=no ubuntu@${APP_EC2_IP} "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin && docker pull ${IMAGE_NAME}:latest && docker stop node-app || true && docker rm node-app || true && docker run -d --name node-app -p 8080:3000 ${IMAGE_NAME}:latest"
-                        """
-                    }
-                }
+                echo 'Deploying application container on host port 3000...'
+                // Stop and remove existing container if it exists
+                sh "docker rm -f ${CONTAINER_NAME} || true"
+                // Run container mapped to host port 3000
+                sh "docker run -d -p 3000:8080 --name ${CONTAINER_NAME} ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
             }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                echo 'Verifying container health status...'
+                sh "docker ps | grep ${CONTAINER_NAME}"
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully! Application is live on port 3000.'
+        }
+        failure {
+            echo 'Pipeline failed. Please check the stage logs above.'
         }
     }
 }
