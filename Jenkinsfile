@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HUB_USER = 'your-dockerhub-username'
+        DOCKER_HUB_USER = 'sathya10dock'
         IMAGE_NAME      = 'node-devops-app'
         IMAGE_TAG       = 'latest'
         CONTAINER_NAME  = 'node-app-local'
-        DOCKER_CREDS_ID = 'docker-hub-credentials'
+        DOCKER_CREDS_ID = 'dockerhub-token'
     }
 
     stages {
