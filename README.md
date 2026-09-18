@@ -25,3 +25,14 @@ Capstone_project/
 ├── Dockerfile              # Docker image build instructions
 ├── Jenkinsfile             # Declarative CI/CD pipeline definition
 └── README.md               # Project documentation
+
+---
+
+## 🔄 CI/CD Flow Explained
+
+* **1. Code Push (Source Control):** Changes are committed and pushed by the developer to the GitHub repository.
+* **2. Automated Trigger (CI):** GitHub notifies Jenkins, automatically triggering the `Jenkinsfile` pipeline execution.
+* **3. Checkout & Build:** Jenkins clones the latest source code and executes a Docker build, packaging the Node.js application into a production-ready container image.
+* **4. Push to Registry:** Utilizing secure Jenkins credentials, the pipeline logs into Docker Hub and pushes the newly built image (`latest`).
+* **5. Automated Deployment (CD):** Jenkins connects to the target AWS EC2 instance, safely removes any legacy container instance (`docker rm -f`), pulls the fresh image, and starts a brand-new container mapped to ports `8081` (host) and `8080` (container).
+* **6. Verification:** The pipeline executes validation steps to ensure the container is healthy and the service is live.
