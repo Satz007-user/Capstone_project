@@ -7,7 +7,7 @@ pipeline {
         IMAGE_TAG = 'latest'
         CONTAINER_NAME = 'node-app-local'
         HOST_PORT = '8081'
-        CONTAINER_PORT = '3000'
+        CONTAINER_PORT = '8080'
     }
 
     stages {
