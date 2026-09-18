@@ -19,7 +19,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo 'Building Docker image...'
-                bat "docker build -t %DOCKER_HUB_USER%/%IMAGE_NAME%:%IMAGE_TAG% ."
+                sh "docker build -t ${env.DOCKER_HUB_USER}/${env.IMAGE_NAME}:${env.IMAGE_TAG} ."
             }
         }
 
@@ -27,8 +27,8 @@ pipeline {
             steps {
                 echo 'Logging in and pushing image to Docker Hub...'
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-token', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    bat 'docker login -u "%DOCKER_USER%" -p "%DOCKER_PASSWORD%"'
-                    bat "docker push %DOCKER_HUB_USER%/%IMAGE_NAME%:%IMAGE_TAG%"
+                    sh 'docker login -u "$DOCKER_USER" -p "$DOCKER_PASSWORD"'
+                    sh "docker push ${env.DOCKER_HUB_USER}/${env.IMAGE_NAME}:${env.IMAGE_TAG}"
                 }
             }
         }
@@ -36,15 +36,15 @@ pipeline {
         stage('Deploy Container') {
             steps {
                 echo 'Deploying application container on host port 8081...'
-                bat 'docker rm -f %CONTAINER_NAME% 2>nul || exit 0'
-                bat "docker run -d -p 8081:8080 --name %CONTAINER_NAME% %DOCKER_HUB_USER%/%IMAGE_NAME%:%IMAGE_TAG%"
+                sh 'docker rm -f ${CONTAINER_NAME} || true'
+                sh "docker run -d -p 8081:8080 --name ${env.CONTAINER_NAME} ${env.DOCKER_HUB_USER}/${env.IMAGE_NAME}:${env.IMAGE_TAG}"
             }
         }
 
         stage('Verify Deployment') {
             steps {
                 echo 'Verifying container health status...'
-                bat 'docker ps | findstr %CONTAINER_NAME%'
+                sh 'docker ps | grep ${CONTAINER_NAME}'
             }
         }
     }
