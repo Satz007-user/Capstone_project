@@ -6,7 +6,7 @@ pipeline {
         IMAGE_NAME = 'sathya10dock/node-devops-app'
         IMAGE_TAG = 'latest'
         CONTAINER_NAME = 'node-app-local'
-        HOST_PORT = '8081'
+        HOST_PORT = '80'
         CONTAINER_PORT = '8080'
     }
 
