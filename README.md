@@ -44,7 +44,7 @@ The automated Jenkins pipeline (Jenkinsfile) seamlessly coordinates building, te
 
 4. **Push to Registry:** Utilizing secure Jenkins credentials, the pipeline logs into Docker Hub and pushes the newly built image (latest).
 
-5. **Automated Deployment (CD):** Jenkins connects to the target AWS EC2 instance, safely removes any legacy container instance (`docker rm -f`), pulls the fresh image, and starts a brand-new container mapped to ports 8081 (host) and 8080 (container).
+5. **Automated Deployment (CD):** Jenkins connects to the target AWS EC2 instance, safely removes any legacy container instance (`docker rm -f`), pulls the fresh image, and starts a brand-new container mapped to public id http://40.192.70.160 (host) and 8080 (container).
 
 6. **Verification:** The pipeline executes validation steps to ensure the container is healthy and the service is live.
 
