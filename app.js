@@ -87,7 +87,7 @@ app.get('/', (req, res) => {
         <body>
             <div class="container">
                 <header>
-                    <h1>Capstone Project</h1>
+                    <h1>DevOps Capstone Project</h1>
                     <div class="metadata">
                         <span><strong>Author:</strong> Sathyamurthy B</span>
                         <span><strong>Year:</strong> 2026</span>
